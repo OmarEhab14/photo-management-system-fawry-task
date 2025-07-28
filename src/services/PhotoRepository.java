@@ -1,31 +1,33 @@
 package services;
 
 import interfaces.Repository;
+import models.CityLocations;
+import models.LocationZone;
 import models.Photo;
 
 import java.time.LocalDate;
 import java.util.*;
 
 public class PhotoRepository implements Repository {
+    private List<Photo> photos;
     private Map<String, List<Photo>> tagToPhotos;
     private Map<LocalDate, List<Photo>> dateToPhotos;
-    private Map<String, List<Photo>> locationToPhotos;
     private final Set<Integer> photoIds;
 
     public PhotoRepository() {
+        photos = new ArrayList<>();
         tagToPhotos = new HashMap<>();
         dateToPhotos = new HashMap<>();
-        locationToPhotos = new HashMap<>();
         photoIds = new HashSet<>();
     }
 
     @Override
     public void store(Photo photo) {
         if (photoIds.contains(photo.getId())) return;
+        photos.add(photo);
         photoIds.add(photo.getId());
         storePhotoByTags(photo);
         storePhotoByDate(photo);
-        storePhotoByLocation(photo);
     }
 
     @Override
@@ -39,8 +41,42 @@ public class PhotoRepository implements Repository {
     }
 
     @Override
-    public List<Photo> searchByLocation(String location) {
-        return locationToPhotos.getOrDefault(location, Collections.emptyList());
+    public List<Photo> searchByLocation(String city) {
+        List<Photo> result = new ArrayList<>();
+        LocationZone zone = CityLocations.get(city);
+
+        if (zone == null) return result;
+
+        for (Photo photo : photos) {
+            double distance = haversine(
+                    zone.getLatitude(), zone.getLongitude(),
+                    photo.getLocation().getLatitude(), photo.getLocation().getLongitude()
+            );
+
+            if (distance <= zone.getRadius()) {
+                result.add(photo);
+            }
+        }
+
+        return result;
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS = 6371;
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS * c;
     }
 
     @Override
@@ -60,17 +96,12 @@ public class PhotoRepository implements Repository {
             tagToPhotos.put(tag, photosFromTag);
         }
     }
+
     private void storePhotoByDate(Photo photo) {
         LocalDate date = photo.getDate();
         List<Photo> photosFromDate = dateToPhotos.getOrDefault(date, new ArrayList<>());
         photosFromDate.add(photo);
         dateToPhotos.put(date, photosFromDate);
-    }
-    private void storePhotoByLocation(Photo photo) {
-        String location = photo.getLocation();
-        List<Photo> photosFromLocation = locationToPhotos.getOrDefault(location, new ArrayList<>());
-        photosFromLocation.add(photo);
-        locationToPhotos.put(location, photosFromLocation);
     }
 
     public Map<String, List<Photo>> getTagToPhotos() {
@@ -79,9 +110,5 @@ public class PhotoRepository implements Repository {
 
     public Map<LocalDate, List<Photo>> getDateToPhotos() {
         return dateToPhotos;
-    }
-
-    public Map<String, List<Photo>> getLocationToPhotos() {
-        return locationToPhotos;
     }
 }

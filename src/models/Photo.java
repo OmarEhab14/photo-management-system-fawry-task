@@ -8,14 +8,16 @@ public class Photo {
     private int id;
     private String name;
     private LocalDate date;
-    private String location;
+    private String city;
     private Set<String> tags;
-    public Photo(int id, String name, LocalDate date, String location, Set<String> tags) {
+    private Location location;
+    public Photo(int id, String name, LocalDate date, String city, Set<String> tags, Location location) {
         this.id = id;
         this.name = name;
         this.date = date;
-        this.location = location;
+        this.city = city;
         this.tags = tags;
+        this.location = location;
     }
 
     @Override
@@ -47,12 +49,12 @@ public class Photo {
         this.date = date;
     }
 
-    public String getLocation() {
-        return location;
+    public String getCity() {
+        return city;
     }
 
     public void setLocation(String location) {
-        this.location = location;
+        this.city = city;
     }
 
     public Set<String> getTags() {
@@ -61,6 +63,18 @@ public class Photo {
 
     public void setTags(Set<String> tags) {
         this.tags = tags;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     @Override
