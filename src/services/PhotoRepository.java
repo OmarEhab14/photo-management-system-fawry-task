@@ -83,6 +83,7 @@ public class PhotoRepository implements Repository {
     public Set<Photo> searchByMultipleTags(Set<String> tags) {
         Set<Photo> photos = new HashSet<>();
         for (String tag : tags) {
+            tag = tag.toLowerCase();
             List<Photo> photosFromTag = tagToPhotos.getOrDefault(tag, Collections.emptyList());
             photos.addAll(photosFromTag);
         }
@@ -91,6 +92,7 @@ public class PhotoRepository implements Repository {
 
     private void storePhotoByTags(Photo photo) {
         for (String tag : photo.getTags()) {
+            tag = tag.toLowerCase();
             List<Photo> photosFromTag = tagToPhotos.getOrDefault(tag, new ArrayList<>());
             photosFromTag.add(photo);
             tagToPhotos.put(tag, photosFromTag);

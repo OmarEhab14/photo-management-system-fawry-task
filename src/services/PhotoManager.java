@@ -18,6 +18,7 @@ public class PhotoManager {
     }
 
     public List<Photo> searchByTag(String tag) {
+        tag = tag.toLowerCase();
         return photoRepository.searchByTag(tag);
     }
 
@@ -26,6 +27,7 @@ public class PhotoManager {
     }
 
     public List<Photo> searchByLocation(String location) {
+        location = location.toLowerCase();
         return photoRepository.searchByLocation(location);
     }
 
